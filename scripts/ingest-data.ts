@@ -31,6 +31,8 @@ export const run = async () => {
     /*create and store the embeddings in the vectorStore*/
     const embeddings = new OpenAIEmbeddings();
     const index = pinecone.Index(PINECONE_INDEX_NAME);
+    
+    // delete all existing pinecone stuff
     await index.delete1({
       deleteAll: true,
       namespace: PINECONE_NAME_SPACE,
