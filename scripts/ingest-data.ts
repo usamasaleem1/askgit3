@@ -54,4 +54,3 @@ export const run = async () => {
   console.log('ingestion complete');
 })();
 
-export { };

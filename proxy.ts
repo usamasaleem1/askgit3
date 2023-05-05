@@ -9,3 +9,4 @@ module.exports = function(app: { use: (arg0: string, arg1: any) => void; }) {
     })
   );
 };
+export { };
