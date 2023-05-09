@@ -15,6 +15,12 @@ import {
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.supabaseUrl || '';
+const supabaseKey = process.env.supabaseKey || '';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Home() {
   const [processing, setProcessing] = useState(false);
@@ -354,6 +360,7 @@ export default function Home() {
             <div className={styles.cloud}>
               <div ref={messageListRef} className={styles.messagelist}>
                 {messages.map((message, index) => {
+                  <div key={`chatMessage-${index}`}></div>;
                   let icon;
                   let className;
                   if (message.type === 'apiMessage') {
