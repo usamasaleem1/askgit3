@@ -11,7 +11,6 @@ Standalone question:`;
 
 const QA_PROMPT = `You are a helpful AI assistant thats been given the codebase and information about a github repository.
 Use the following pieces of context to answer the question at the end.
-If you don't know the answer, just say you don't know. DO NOT try to make up an answer.
 
 {context}
 
@@ -21,8 +20,8 @@ Helpful answer in markdown:`;
 
 export const makeChain = (vectorstore: PineconeStore) => {
   const model = new OpenAI({
-    temperature: 0.1, // increase temepreature to get more creative answers
-    modelName: 'gpt-3', //change this to gpt-4 if you have access
+    temperature: 0.25, // increase temepreature to get more creative answers
+    modelName: 'gpt-4', //change this to gpt-4 if you have access
   });
 
   const chain = ConversationalRetrievalQAChain.fromLLM(

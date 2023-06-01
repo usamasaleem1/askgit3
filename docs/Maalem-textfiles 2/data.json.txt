@@ -1,0 +1,40 @@
+{
+    "Header": {
+
+        "title": "Avez-vous besoin d'aide?",
+        "paragraph": "Maalem est une application d'aide-étudiante qui permet aux étudiants de s'entre aider durant leur parcours scolaire. Posez des questions et aidez les autres selon vos forces!"
+
+    },
+    "Team": [{
+            "img": "img/team/ryan.jpg",
+            "name": "Ryan Guzelian",
+            "job": ""
+        },
+        {
+            "img": "https://img.sshort.net/i/fSCY.jpg",
+            "name": "Alexis Provost",
+            "job": ""
+        }, {
+            "img": "img/team/alec.jpg",
+            "name": "Alec Tufenkjian",
+            "job": ""
+        }
+    ],
+    "Features": [
+        {
+            "icon": "fa fa-comments-o",
+            "title": "Chat intégré",
+            "text": "On en a assez des systèmes de messageries lents et complexes! Parlez avec d'autres étudiants directement et à temps réel."
+        },
+        {
+            "icon": "fa fa-usd",
+            "title": "100% Gratuit",
+            "text": "Nous ne vous demanderons jamais de payer ou même de saisir votre carte de crédit pour accéder à cette application."
+        },
+        {
+            "icon": "fa fa-group",
+            "title": "Effective",
+            "text": "Nous vous jumelerons uniquement avec des étudiants qui maîtrisent le sujet concerné."
+        }
+    ]
+}

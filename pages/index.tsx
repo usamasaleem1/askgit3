@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect } from 'react';
 import Layout from '@/components/layout';
 import styles from '@/styles/Home.module.css';
@@ -16,13 +18,15 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.supabaseUrl || '';
-const supabaseKey = process.env.supabaseKey || '';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import * as openai from 'openai';
+import { Configuration, OpenAIApi } from 'openai';
+import dotenv from 'dotenv';
+import { Octokit } from 'octokit';
 
 export default function Home() {
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_API_KEY,
+  });
   const [processing, setProcessing] = useState(false);
   const [query, setQuery] = useState<string>('');
   const [URLQuery, setURLQuery] = useState<string>('');
@@ -71,54 +75,220 @@ export default function Home() {
   }
 
   async function downloadFiles(repoOwner: string, repoName: string) {
-    // Fetch repository information
-    const response = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}`,
-    );
-    const repoInfo = await response.json();
+    const api_key = process.env.GITHUB_API_KEY;
 
-    // Download a repo as a zip file
-    const zipUrl = `https://github.com/${repoOwner}/${repoName}/archive/refs/heads/main.zip`;
-    // Fetch and load repo using axios get using the api endpoint we created
-    const response2 = await axios.get(
-      `/api/download?url=${encodeURIComponent(zipUrl)}`,
-      { responseType: 'arraybuffer' },
-    );
-    const data = response2.data;
+    try {
+      // Helper function to fetch data and handle 404 errors
+      async function fetchData(url: string) {
+        try {
+          return await octokit.request(url, {
+            owner: repoOwner,
+            repo: repoName,
+          });
+        } catch (error: any) {
+          if (error.status === 404) {
+            console.log(`Error 404: ${url} not found.`);
+            return null;
+          } else {
+            throw error;
+          }
+        }
+      }
 
-    const zip = await JSZip.loadAsync(data);
+      // Fetch repository information
+      const metaResponse = await fetchData('GET /repos/{owner}/{repo}');
+      if (!metaResponse?.data) {
+        return;
+      }
+      const eventsResponse = await fetchData(
+        'GET /repos/{owner}/{repo}/events/',
+      );
+      const branchesResponse = await fetchData(
+        'GET /repos/{owner}/{repo}/branches/',
+      );
+      const issuesResponse = await fetchData(
+        'GET /repos/{owner}/{repo}/issues/',
+      );
+      const pullsResponse = await fetchData('GET /repos/{owner}/{repo}/pulls/');
+      const commitsResponse = await fetchData(
+        'GET /repos/{owner}/{repo}/commits',
+      );
+      const forksResponse = await fetchData('GET /repos/{owner}/{repo}/forks');
 
-    // Extract necessary files, convert them to text files, and add them to a new zip without the folder structure
-    const newTextZip = new JSZip();
-    const filePromises = Object.keys(zip.files).map(async (filename) => {
-      // Skip folders
-      if (zip.files[filename].dir) return;
-      // skip images
-      if (filename.match(/\.(jpg|jpeg|png|gif|ico|svg)$/)) return;
-      // skip package-lock.json
-      if (filename.match(/package-lock.json$/)) return;
+      // \\
 
-      const content = await zip.files[filename].async('string');
+      const repoInfo = (await metaResponse) as any;
 
-      // Remove any characters not in the WinAnsi encoding range and replace them with spaces
-      // const cleanedContent = content.replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ');
+      const metadata = (await commitsResponse) as any;
 
-      // Flatten the file hierarchy by getting only the file name without the folders
-      const baseFilename = filename.split('/').pop();
+      const forks = (await forksResponse) as any;
 
-      // Add cleanedContent to the new zip as a .txt file, in the root directory of the zip
-      newTextZip.file(`${baseFilename}.txt`, content);
+      const events = (await eventsResponse) as any;
+
+      const branches = (await branchesResponse) as any;
+
+      const issues = (await issuesResponse) as any;
+
+      const pulls = (await pullsResponse) as any;
+
+      // \\
+
+      // Iterate through URLs in the repoInfo
+      const data: { [key: string]: any } = {};
+      const urlRegex =
+        /https:\/\/api\.github\.com\/repos\/[^\/]+\/[^\/]+\/[^/]+/;
+      for (const key in metaResponse.data) {
+        if (
+          typeof repoInfo[key] === 'string' &&
+          repoInfo[key].match(urlRegex)
+        ) {
+          const response = await fetch(repoInfo[key], {
+            headers: { Authorization: `${api_key}` },
+          });
+          data[key] = await response.json().catch((error) => {
+            console.error(`Error fetching ${key}:`, error);
+          });
+        }
+      }
+
+      // Iterate through URLs in the metadata
+      for (const key in commitsResponse!.data) {
+        if (
+          typeof metadata[key] === 'string' &&
+          metadata[key].match(urlRegex)
+        ) {
+          const response = await fetch(metadata[key], {
+            headers: { Authorization: `${api_key}` },
+          });
+          metadata[key] = await response.json().catch((error) => {
+            console.error(`Error fetching ${key}:`, error);
+          });
+        }
+      }
+
+      // Iterate through URLs in the forks
+      for (const key in forksResponse!.data) {
+        if (typeof forks[key] === 'string' && forks[key].match(urlRegex)) {
+          const response = await fetch(forks[key], {
+            headers: { Authorization: `${api_key}` },
+          });
+          forks[key] = await response.json().catch((error) => {
+            console.error(`Error fetching ${key}:`, error);
+          });
+        }
+      }
+
+      // Download a repo as a zip file
+      const zipUrl = `https://github.com/${repoOwner}/${repoName}/zipball/master/`;
+
+      // Fetch and load repo using axios get using the api endpoint we created
+      const response2 = await axios.get(
+        `/api/download?url=${encodeURIComponent(zipUrl)}`,
+        {
+          responseType: 'arraybuffer',
+        },
+      );
+
+      const repoData = response2.data;
+      const zip = await JSZip.loadAsync(repoData);
+
+      // Extract necessary files, convert them to text files, and add them to a new zip without the folder structure
+      const newTextZip = new JSZip();
+
+      const filePromises = Object.keys(zip.files).map(async (filename) => {
+        // Skip folders
+        if (zip.files[filename].dir) return;
+
+        // skip images
+        if (filename.match(/\.(jpg|jpeg|png|gif|ico|svg)$/)) return;
+
+        // skip package-lock.json
+        if (filename.match(/package-lock.json$/)) return;
+
+        const content = await zip.files[filename].async('string');
+
+        // Flatten the file hierarchy by getting only the file name without the folders
+        const baseFilename = filename.split('/').pop();
+
+        // Add cleanedContent to the new zip as a .txt file, in the root directory of the zip
+        newTextZip.file(`${baseFilename}.txt`, content);
+      });
+
+      await Promise.all(filePromises);
+
+      // Convert repoInfo to text and add it to the newTextZip as a file named 'repo_info.txt'
+      const text = JSON.stringify(repoInfo, null, 2);
+      newTextZip.file('repo_info.txt', text);
+
+      // Convert metadata to text and add it to the newTextZip as a file named 'metadata.txt'
+      const metadataText = JSON.stringify(metadata, null, 2);
+      newTextZip.file('commits.txt', metadataText);
+
+      // Convert forks to text and add it to the newTextZip as a file named 'forks.txt'
+      const forksText = JSON.stringify(forks, null, 2);
+      newTextZip.file('forks.txt', forksText);
+
+      // Convert data to text and add it to the newTextZip as separate files named '<key>_data.txt', e.g., 'forks_data.txt'
+      const dataText = JSON.stringify(data, null, 2);
+      newTextZip.file('data.txt', dataText);
+
+      // Convert events to text and add it to the newTextZip as a file named 'events.txt'
+      const eventsText = JSON.stringify(events, null, 2);
+      newTextZip.file('events.txt', eventsText);
+
+      // Convert branches to text and add it to the newTextZip as a file named 'branches.txt'
+      const branchesText = JSON.stringify(branches, null, 2);
+      newTextZip.file('branches.txt', branchesText);
+
+      // Convert issues to text and add it to the newTextZip as a file named 'issues.txt'
+      const issuesText = JSON.stringify(issues, null, 2);
+      newTextZip.file('issues.txt', issuesText);
+
+      // Convert pulls to text and add it to the newTextZip as a file named 'pulls.txt'
+      const pullsText = JSON.stringify(pulls, null, 2);
+      newTextZip.file('pulls.txt', pullsText);
+
+      for (const key in data) {
+        // Store each response as a separate txt file named '<key>_data.txt', e.g., 'forks_data.txt'
+        const textKey = JSON.stringify(data[key], null, 2);
+        newTextZip.file(`${key}_data.txt`, textKey);
+      }
+
+      // Generate and save the zip file with text files and repoInfo
+      const newTextZipBlob = await newTextZip.generateAsync({ type: 'blob' });
+      saveAs(newTextZipBlob, `${repoName}-textfiles.zip`);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+    const configuration = new Configuration({
+      organization: 'org-0kv1BZemqKjx2ZYE3QI80FAX',
+      apiKey: process.env.OPENAI_API_KEY,
     });
-
-    await Promise.all(filePromises);
-
-    // Convert repoInfo to text and add it to the newTextZip as a file named 'repo_info.txt'
-    const text = JSON.stringify(repoInfo, null, 2);
-    newTextZip.file('repo_info.txt', text);
-
-    // Generate and save the zip file with text files and repoInfo
-    const newTextZipBlob = await newTextZip.generateAsync({ type: 'blob' });
-    saveAs(newTextZipBlob, `${repoName}-textfiles.zip`);
+    const openai = new OpenAIApi(configuration);
+    async function loadRandomQuestion() {
+      try {
+        const response = await openai.createCompletion({
+          model: 'text-davinci-003',
+          prompt:
+            'Act as a person asking questions about a github repo, like how many forks does it have, etc. Make a random question about the repo.',
+          max_tokens: 1,
+          temperature: 0.2,
+        });
+        console.log(response.data);
+        const question = response.data.choices[0].text;
+        if (question) {
+          const inputElement = document.getElementById(
+            'userInput',
+          ) as HTMLInputElement;
+          if (inputElement) {
+            inputElement.placeholder = question.trim() + ' [TAB] to fill in';
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching a random question:', error);
+      }
+    }
   }
 
   // handle github URL
@@ -159,6 +329,12 @@ export default function Home() {
       alert('An error occurred while processing the URL');
     }
   }
+  const handleTab = (e: any) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      setQuery(e.target.getAttribute('placeholder'));
+    }
+  };
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -247,6 +423,32 @@ export default function Home() {
     }
   };
 
+  const questions = [
+    'What are the last 3 commits?',
+    'Who are the top contributors to this repo?',
+    'What is the most recent issue created?',
+    'How many forks does this repo have?',
+    'What is the primary programming language used in this repo?',
+    'What is the description of this repo?',
+    'What is the most recent pull request?',
+    'What is the repos license?',
+    'How many branches does this repo have?',
+    'What is the total number of commits in this repo?',
+    'What is the repos creation date?',
+    'What is the repos last update date?',
+    'What is the repos clone URL?',
+    'What is the repos homepage URL?',
+    'What is the repos owner username?',
+    'What is the repos owner email?',
+    'What is the code about?',
+  ];
+  function getRandomQuestion() {
+    return questions[Math.floor(Math.random() * questions.length)];
+  }
+  const [placeholder, setPlaceholder] = useState(getRandomQuestion());
+  useEffect(() => {
+    setPlaceholder(getRandomQuestion());
+  }, [loading]);
   return (
     <>
       <Layout>
@@ -255,7 +457,7 @@ export default function Home() {
             Chat With GitHub Repo
           </h1>
           <div className="m-auto p-1">
-            <a href="https://twitter.com/saleemusama">by Usama</a>
+            <a href="https://twitter.com/saleemusama">Research Experiment</a>
           </div>
 
           {/* input box to paste a URL with a button beside that says "Process" */}
@@ -444,7 +646,14 @@ export default function Home() {
                 <form onSubmit={handleSubmit}>
                   <textarea
                     disabled={loading}
-                    onKeyDown={handleEnter}
+                    onKeyDown={handleTab} // Add this line
+                    // on enter, submit form
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
                     ref={textAreaRef}
                     autoFocus={false}
                     rows={1}
@@ -452,14 +661,13 @@ export default function Home() {
                     id="userInput"
                     name="userInput"
                     placeholder={
-                      loading
-                        ? 'Waiting for response...'
-                        : 'When was it last updated?'
+                      loading ? 'Waiting for response...' : placeholder
                     }
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     className={styles.textarea}
                   />
+
                   <button
                     type="submit"
                     disabled={loading}
@@ -491,7 +699,16 @@ export default function Home() {
           </main>
         </div>
         <footer className="m-auto p-4">
-          <a href="https://twitter.com/saleemusama">Twittah</a>
+          <a href="https://twitter.com/saleemusama">
+            <img
+              src="https://img.icons8.com/?size=512&id=5MQ0gPAYYx7a&format=png"
+              alt="Twitter"
+              width="35px"
+              style={{
+                paddingBottom: '4em',
+              }}
+            />
+          </a>
         </footer>
       </Layout>
     </>
