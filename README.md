@@ -1,18 +1,3 @@
-# GPT-4 & LangChain - Create a ChatGPT Chatbot for Your PDF Files
-
-Use the new GPT-4 api to build a chatGPT chatbot for multiple Large PDF files.
-
-Tech stack used includes LangChain, Pinecone, Typescript, Openai, and Next.js. LangChain is a framework that makes it easier to build scalable AI/LLM apps and chatbots. Pinecone is a vectorstore for storing embeddings and your PDF in text to later retrieve similar docs.
-
-[Tutorial video](https://www.youtube.com/watch?v=ih9PBGVVOO4)
-
-[Join the discord if you have questions](https://discord.gg/E4Mc77qwjm)
-
-The visual guide of this repo and tutorial is in the `visual guide` folder.
-
-**If you run into errors, please review the troubleshooting section further down this page.**
-
-Prelude: Please make sure you have already downloaded node on your system and the version is 18 or greater.
 
 ## Development
 
@@ -47,6 +32,8 @@ PINECONE_ENVIRONMENT=
 
 PINECONE_INDEX_NAME=
 
+etc
+
 ```
 
 - Visit [openai](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) to retrieve API keys and insert into your `.env` file.
@@ -56,11 +43,13 @@ PINECONE_INDEX_NAME=
 
 5. In `utils/makechain.ts` chain change the `QA_PROMPT` for your own usecase. Change `modelName` in `new OpenAI` to `gpt-4`, if you have access to `gpt-4` api. Please verify outside this repo that you have access to `gpt-4` api, otherwise the application will not work.
 
-## Convert your PDF files to embeddings
+## Step 1: Process
+1. Go to the webapp frontend running in your browser (npm run dev), input the public github URL and click process and it will fetch all the repo data with the github api and more and make it all into a zip file.
+2. Unzip the zip file into `docs` folder in the source code (you can keep it all in one folder)
 
-**This repo can load multiple PDF files**
+## Step 2: Ingest
 
-1. Inside `docs` folder, add your pdf files or folders that contain pdf files.
+1. Now that you have a folder in the `docs` folder that contains all the processed files from your github URL, go to terminal and run:
 
 2. Run the script `npm run ingest` to 'ingest' and embed your docs. If you run into errors troubleshoot below.
 
