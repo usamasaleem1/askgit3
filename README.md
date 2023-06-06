@@ -11,30 +11,24 @@ git clone [github https url]
 2. Install packages
 
 First run `npm install yarn -g` to install yarn globally (if you haven't already).
+or `npm install`
 
 Then run:
 
 ```
 yarn install
 ```
+or 
+```
+npm install
+```
 After installation, you should now see a `node_modules` folder.
 
 3. Set up your `.env` file
 
 - Copy `.env.example` into `.env`
-  Your `.env` file should look like this:
 
-```
-OPENAI_API_KEY=
-
-PINECONE_API_KEY=
-PINECONE_ENVIRONMENT=
-
-PINECONE_INDEX_NAME=
-
-etc
-
-```
+4. npm run dev
 
 - Visit [openai](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) to retrieve API keys and insert into your `.env` file.
 - Visit [pinecone](https://pinecone.io/) to create and retrieve your API keys, and also retrieve your environment and index name from the dashboard.
