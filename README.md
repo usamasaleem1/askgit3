@@ -42,7 +42,7 @@ After installation, you should now see a `node_modules` folder.
 Once you've verified that the embeddings and content have been successfully added to your Pinecone, you can run the app `npm run dev` to launch the local dev environment, and then type a question in the chat interface.
 
 ## Step 1: Process
-1. Go to the webapp frontend running in your browser (npm run dev), input the public github URL and click process and it will fetch all the repo data with the github api and more and make it all into a zip file.
+1. Go to the webapp frontend running in your browser (npm run dev), input the public github URL and click process (or ingest button, one or the other will download a zip file) and it will fetch all the repo data with the github api and more and make it all into a zip file.
 2. Unzip the zip file into `docs` folder in the source code (you can keep it all in one folder)
 
 ## Step 2: Ingest
