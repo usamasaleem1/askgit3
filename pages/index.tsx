@@ -449,6 +449,60 @@ export default function Home() {
   useEffect(() => {
     setPlaceholder(getRandomQuestion());
   }, [loading]);
+
+  const SwitchButton = () => {
+    const [isOn, setIsOn] = useState(false);
+
+    const handleClick = () => {
+      setIsOn(!isOn);
+    };
+
+    const containerStyle: React.CSSProperties = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    };
+
+    const buttonStyle: React.CSSProperties = {
+      width: '66px',
+      height: '34px',
+      borderRadius: '17px',
+      backgroundColor: isOn ? '#4CCBD9' : '#3191DB',
+      position: 'relative',
+      transition: 'background-color 0.3s',
+      cursor: 'pointer',
+    };
+
+    const innerCircleStyle: React.CSSProperties = {
+      position: 'absolute',
+      top: '3px',
+      left: isOn ? '35px' : '3px',
+      width: '28px',
+      height: '28px',
+      borderRadius: '14px',
+      backgroundColor: '#FFFFFFF9',
+      transition: 'left 0.2s',
+    };
+
+    const labelStyle: React.CSSProperties = {
+      marginTop: '8px',
+      textAlign: 'center',
+      color: '#3B3B3B',
+      fontWeight: 'bold',
+    };
+
+    return (
+      <div style={containerStyle}>
+        <div style={buttonStyle} onClick={handleClick}>
+          <div style={innerCircleStyle}></div>
+        </div>
+        <div style={labelStyle}>
+          {isOn ? 'Chat about Code' : 'Chat about GitHub Repo Data'}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Layout>
@@ -462,12 +516,15 @@ export default function Home() {
 
           {/* input box to paste a URL with a button beside that says "Process" */}
           <div
-            className="flex items-center justify-center"
-            style={
-              {
-                // margin: '1rem',
-              }
-            }
+            className="flex items-center "
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              marginLeft: '40px',
+              marginRight: '40px',
+              alignContent: 'center',
+              justifyContent: 'center',
+            }}
           >
             <form
               className="flex flex-col items-center justify-center"
@@ -483,8 +540,6 @@ export default function Home() {
                 }}
               >
                 <textarea
-                  // ref={textAreaRef}
-                  // className="w-full border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter URL here"
                   value={URLQuery}
                   onChange={(e) => setURLQuery(e.target.value)}
@@ -502,60 +557,73 @@ export default function Home() {
                     overflow: 'hidden',
                   }}
                 />{' '}
-                {processing ? (
-                  <div
-                    style={{
-                      backgroundColor: '#2564EB00',
-                      marginLeft: '1rem',
-                    }}
-                  >
-                    <LoadingDots color="#050C1AEF" />
-                  </div>
-                ) : (
-                  <button
-                    type="submit"
-                    style={{
-                      marginLeft: '1rem',
-                      padding: '0.5rem 1.5rem',
-                      // backgroundColor: '#2563EB',
-                      //gradient background
-                      backgroundImage:
-                        'linear-gradient(180deg, #0FB6C5 0%, #3191DB 100%)',
-                      color: '#FFFFFF',
-                      borderRadius: '2rem',
-                      boxShadow: '#0000001A 0px 4px 12px',
-                      height: '50%',
-                      alignContent: 'center',
-                      borderWidth: '3px',
-                      borderColor: '#FFFFFF70',
-                    }}
-                    disabled={processing} // Disable the button while processing
-                  >
-                    Process
-                  </button>
-                )}
               </div>
             </form>
-            <button
-              type="submit"
-              style={{
-                margin: '1rem',
-                padding: '0.5rem 1.5rem',
-                backgroundImage:
-                  'linear-gradient(180deg, #0FB6C5 0%, #3191DB 100%)',
-                color: '#FFFFFF',
-                borderRadius: '2rem',
-                boxShadow: '#0000001A 0px 4px 12px',
-                height: '50%',
-                alignContent: 'center',
-                borderWidth: '3px',
-                borderColor: '#FFFFFF70',
-              }}
-              // run ingest function
-              onClick={runIngestScript}
-            >
-              Ingest
-            </button>
+            <div>
+              {processing ? (
+                <div
+                  style={{
+                    backgroundColor: '#2564EB00',
+                    marginLeft: '1rem',
+                  }}
+                >
+                  <LoadingDots color="#050C1AEF" />
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  style={{
+                    marginLeft: '1rem',
+                    padding: '0.5rem 1.5rem',
+                    // backgroundColor: '#2563EB',
+                    //gradient background
+                    backgroundImage:
+                      'linear-gradient(180deg, #0FB6C5 0%, #3191DB 100%)',
+                    color: '#FFFFFF',
+                    borderRadius: '2rem',
+                    boxShadow: '#0000001A 0px 4px 12px',
+                    height: '50%',
+                    alignContent: 'center',
+                    borderWidth: '3px',
+                    borderColor: '#FFFFFF70',
+                  }}
+                  disabled={processing} // Disable the button while processing
+                >
+                  Process
+                </button>
+              )}
+              <button
+                type="submit"
+                style={{
+                  margin: '1rem',
+                  padding: '0.5rem 1.5rem',
+                  backgroundImage:
+                    'linear-gradient(180deg, #0FB6C5 0%, #3191DB 100%)',
+                  color: '#FFFFFF',
+                  borderRadius: '2rem',
+                  boxShadow: '#0000001A 0px 4px 12px',
+                  height: '50%',
+                  alignContent: 'center',
+                  borderWidth: '3px',
+                  borderColor: '#FFFFFF70',
+                }}
+                // run ingest function
+                onClick={runIngestScript}
+              >
+                Ingest
+              </button>
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignContent: 'center',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <SwitchButton />
           </div>
 
           <main className={styles.main}>
@@ -644,29 +712,31 @@ export default function Home() {
             <div className={styles.center}>
               <div className={styles.cloudform}>
                 <form onSubmit={handleSubmit}>
-                  <textarea
-                    disabled={loading}
-                    onKeyDown={handleTab} // Add this line
-                    // on enter, submit form
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleSubmit(e);
+                  <div style={{ display: 'flex' }}>
+                    <textarea
+                      disabled={loading}
+                      onKeyDown={handleTab} // Add this line
+                      // on enter, submit form
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSubmit(e);
+                        }
+                      }}
+                      ref={textAreaRef}
+                      autoFocus={false}
+                      rows={1}
+                      maxLength={512}
+                      id="userInput"
+                      name="userInput"
+                      placeholder={
+                        loading ? 'Waiting for response...' : placeholder
                       }
-                    }}
-                    ref={textAreaRef}
-                    autoFocus={false}
-                    rows={1}
-                    maxLength={512}
-                    id="userInput"
-                    name="userInput"
-                    placeholder={
-                      loading ? 'Waiting for response...' : placeholder
-                    }
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className={styles.textarea}
-                  />
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className={styles.textarea}
+                    />
+                  </div>
 
                   <button
                     type="submit"
@@ -691,6 +761,7 @@ export default function Home() {
                 </form>
               </div>
             </div>
+
             {error && (
               <div className="border border-red-400 rounded-md p-4">
                 <p className="text-red-500">{error}</p>

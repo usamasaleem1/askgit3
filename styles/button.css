@@ -1,0 +1,49 @@
+@keyframes onAnimation {
+    0% {
+        left: 2px;
+    }
+    100% {
+        left: 20px;
+    }
+}
+
+@keyframes offAnimation {
+    0% {
+        left: 20px;
+    }
+    100% {
+        left: 2px;
+    }
+}
+
+.custom-button {
+    position: relative;
+    width: 50px;
+    height: 30px;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+}
+
+.custom-button.on {
+    background-color: #5cb85c;
+    animation: onAnimation 0.4s ease;
+}
+
+.custom-button.off {
+    background-color: #ccc;
+    animation: offAnimation 0.4s ease;
+}
+
+.inner-circle {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 20px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: white;
+    transition: 0.4s;
+}
