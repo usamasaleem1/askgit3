@@ -1,18 +1,3 @@
-# GPT-4 & LangChain - Create a ChatGPT Chatbot for Your PDF Files
-
-Use the new GPT-4 api to build a chatGPT chatbot for multiple Large PDF files.
-
-Tech stack used includes LangChain, Pinecone, Typescript, Openai, and Next.js. LangChain is a framework that makes it easier to build scalable AI/LLM apps and chatbots. Pinecone is a vectorstore for storing embeddings and your PDF in text to later retrieve similar docs.
-
-[Tutorial video](https://www.youtube.com/watch?v=ih9PBGVVOO4)
-
-[Join the discord if you have questions](https://discord.gg/E4Mc77qwjm)
-
-The visual guide of this repo and tutorial is in the `visual guide` folder.
-
-**If you run into errors, please review the troubleshooting section further down this page.**
-
-Prelude: Please make sure you have already downloaded node on your system and the version is 18 or greater.
 
 ## Development
 
@@ -26,49 +11,47 @@ git clone [github https url]
 2. Install packages
 
 First run `npm install yarn -g` to install yarn globally (if you haven't already).
+or `npm install`
 
 Then run:
 
 ```
 yarn install
 ```
+or 
+```
+npm install
+```
 After installation, you should now see a `node_modules` folder.
 
 3. Set up your `.env` file
 
 - Copy `.env.example` into `.env`
-  Your `.env` file should look like this:
 
-```
-OPENAI_API_KEY=
-
-PINECONE_API_KEY=
-PINECONE_ENVIRONMENT=
-
-PINECONE_INDEX_NAME=
-
-```
+4. npm run dev
 
 - Visit [openai](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) to retrieve API keys and insert into your `.env` file.
 - Visit [pinecone](https://pinecone.io/) to create and retrieve your API keys, and also retrieve your environment and index name from the dashboard.
-
-4. In the `config` folder, replace the `PINECONE_NAME_SPACE` with a `namespace` where you'd like to store your embeddings on Pinecone when you run `npm run ingest`. This namespace will later be used for queries and retrieval.
+- Check that you've set the vector dimensions to `1536` you can use the free plan
 
 5. In `utils/makechain.ts` chain change the `QA_PROMPT` for your own usecase. Change `modelName` in `new OpenAI` to `gpt-4`, if you have access to `gpt-4` api. Please verify outside this repo that you have access to `gpt-4` api, otherwise the application will not work.
 
-## Convert your PDF files to embeddings
+## Run the app
 
-**This repo can load multiple PDF files**
+Once you've verified that the embeddings and content have been successfully added to your Pinecone, you can run the app `npm run dev` to launch the local dev environment, and then type a question in the chat interface.
 
-1. Inside `docs` folder, add your pdf files or folders that contain pdf files.
+## Step 1: Process
+1. Go to the webapp frontend running in your browser (npm run dev), input the public github URL and click process (or ingest button, one or the other will download a zip file) and it will fetch all the repo data with the github api and more and make it all into a zip file.
+2. Unzip the zip file into `docs` folder in the source code (you can keep it all in one folder)
+
+## Step 2: Ingest
+
+1. Now that you have a folder in the `docs` folder that contains all the processed files from your github URL, go to terminal and run:
 
 2. Run the script `npm run ingest` to 'ingest' and embed your docs. If you run into errors troubleshoot below.
 
 3. Check Pinecone dashboard to verify your namespace and vectors have been added.
 
-## Run the app
-
-Once you've verified that the embeddings and content have been successfully added to your Pinecone, you can run the app `npm run dev` to launch the local dev environment, and then type a question in the chat interface.
 
 ## Troubleshooting
 
